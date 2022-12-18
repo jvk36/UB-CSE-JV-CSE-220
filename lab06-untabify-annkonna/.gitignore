@@ -1,0 +1,3 @@
+*.o
+outputs/*.txt
+untabify

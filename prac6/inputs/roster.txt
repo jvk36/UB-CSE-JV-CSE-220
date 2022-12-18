@@ -1,0 +1,5 @@
+Name                            Position
+------------------------------- --------
+Malcolm "Mal" Reynolds          Captain
+Hoban "Wash" Washburn           Pilot
+Kaywinnet Lee "Kaylee" Frye     Mechanic

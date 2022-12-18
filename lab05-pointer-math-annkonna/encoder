@@ -1,0 +1,58 @@
+#!/usr/bin/python3
+
+import argparse, random, struct, sys
+
+parser = argparse.ArgumentParser()
+parser.add_argument("filename", help='Output filename')
+parser.add_argument("string", help='The string to be encoded')
+parser.add_argument("--chunk-size", type=int, default=-1, help='The chunk size (-1 for random)')
+args = parser.parse_args();
+
+MIN_CHUNK = 3
+MAX_CHUNK = 9
+
+def chunk_size(maxsize):
+    if args.chunk_size == -1:
+        chunksize = random.randint(MIN_CHUNK, MAX_CHUNK)
+    else:
+        chunksize = args.chunk_size
+    if (chunksize > maxsize):
+        return maxsize
+    else:
+        return chunksize
+
+length = len(args.string)
+encoded = 0
+
+if length > 80:
+    print("Encoded strings can be no longer than 80 characters!")
+    sys.exit(1)
+
+chunks = []
+
+while encoded < length:
+    chunksize = chunk_size (length - encoded)
+    chunks.append((chunksize, args.string[encoded:encoded + chunksize]))
+    encoded += chunksize
+
+totallen = 0
+for chunk in chunks:
+    totallen += 8 + chunk[0]
+    if (chunk[0] % 8) > 0:
+        totallen += 8 - (chunk[0] % 8)
+
+buffer = bytearray(totallen + 8)
+encoded = 0
+for chunk in chunks:
+    struct.pack_into("@L", buffer, encoded, chunk[0])
+    encoded += 8
+    for b in str.encode(chunk[1]):
+        struct.pack_into("b", buffer, encoded, int(b))
+        encoded += 1
+    while encoded % 8 != 0:
+        struct.pack_into("b", buffer, encoded, random.randint(-128, 127))
+        encoded += 1
+struct.pack_into("@L", buffer, encoded, 0)
+
+with open(args.filename, "wb") as f:
+    f.write(buffer)
